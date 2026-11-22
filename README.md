@@ -2,7 +2,7 @@
 
 Aurevia is an Android-first progressive web app for meeting people on the same flight. The intended experience lets verified passengers opt into discovery and decide whether to connect with each other.
 
-Version 0.1.0 uses Next.js App Router, TypeScript, and Tailwind CSS. The home page includes a public onboarding preview and Android installation instructions. It uses the approved Aurevia artwork in `public/aurevia-project-icon.png`.
+Aurevia uses Next.js App Router, TypeScript, and Tailwind CSS. The home page includes a public onboarding preview and Android installation instructions. It uses the approved Aurevia artwork in `public/aurevia-project-icon.png`.
 
 ## Local development
 
@@ -18,11 +18,14 @@ Open http://localhost:3000.
 ```sh
 npm run lint
 npm run typecheck
+npm test
 npm run build
 npm start
 ```
 
 If the local sandbox blocks Turbopack’s worker port, run `NEXT_TELEMETRY_DISABLED=1 npm run build -- --webpack` to verify the production build.
+
+With a production build available, run `npm run test:auth` to test the account flows against a temporary loopback HTTPS fixture. It requires OpenSSL and uses no Supabase credentials.
 
 ## PWA behavior
 
@@ -30,11 +33,13 @@ If the local sandbox blocks Turbopack’s worker port, run `NEXT_TELEMETRY_DISAB
 
 To check installation and offline behavior on an Android device, open a production build over HTTPS, install if Chrome offers it, and confirm it opens in standalone mode. Close and reopen the installed app with the device offline, then reconnect and use the retry link.
 
-## Supabase Free
+## Accounts and profiles
 
-The starter runs without a Supabase project. When backend development starts, create or select a Supabase Free project, copy `.env.example` to `.env.local`, and set `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` using the dashboard. The server-side configuration reader in `lib/supabase/config.ts` treats empty configuration as disabled and validates the pair. The Supabase JavaScript SDK is included for future integration. Version 0.1.0 makes no Supabase network calls and collects no passenger data. Keep secret and service-role keys on the server and outside Git.
+Version 0.2.0 adds email/password accounts, email-code confirmation and password recovery, plus a private dashboard and profile. In the default local setup, sign-in shows that account services are unavailable until Supabase is configured.
 
-Use server-managed verification state and row-level security to restrict discovery to verified members of the same dated flight who have opted in. Plan revocable discovery, blocking, reporting, and limited data retention before launch.
+Follow the [Supabase Free setup](supabase/README.md) to configure Auth and apply the profile migration. `lib/supabase` manages typed data access and server-side sessions. `proxy.ts` refreshes sessions and marks account responses private and non-cacheable. Browser forms use Next.js Server Actions and receive neither Supabase configuration nor session tokens. Email confirmation is required in Supabase.
+
+Profiles have a display name, optional bio, and a discoverability preference that starts off. Postgres row-level security limits reads and writes to the owner regardless of that preference. The preference does not publish a profile, and account email is never copied into profile rows.
 
 ## Boarding-pass verification
 
@@ -42,4 +47,4 @@ The planned hybrid flow starts with a user-initiated camera permission request o
 
 A copied barcode can be parsed, so verification requires a trusted validation source or review process. Send only the fields needed for the decision. Keep pass images, raw barcode contents, and booking references out of profiles, analytics, and routine logs. Use synthetic boarding passes in development.
 
-Authentication, verification, discovery, and messaging are planned product work.
+Flight verification, discovery, and messaging are planned product work.

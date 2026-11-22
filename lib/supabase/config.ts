@@ -1,23 +1,24 @@
-type SupabaseConfig = Readonly<{
+export type SupabaseConfig = Readonly<{
   url: string;
   publishableKey: string;
 }>;
 
-export function readSupabaseConfig(): SupabaseConfig | null {
-  const url = process.env.SUPABASE_URL?.trim();
-  const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY?.trim();
+export function readSupabaseConfig(
+  url = process.env.SUPABASE_URL,
+  publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY,
+): SupabaseConfig | null {
+  const origin = url?.trim();
+  const projectUrl = origin && URL.canParse(origin) ? new URL(origin) : null;
+  const key = publishableKey?.trim();
 
-  if (!url && !publishableKey) {
+  if (
+    !projectUrl || projectUrl.protocol !== "https:" ||
+    projectUrl.username || projectUrl.password || projectUrl.pathname !== "/" ||
+    projectUrl.search || projectUrl.hash || !key ||
+    !/^sb_publishable_[A-Za-z0-9_-]+$/.test(key)
+  ) {
     return null;
   }
 
-  if (!url || !publishableKey) {
-    throw new Error("Set both SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY.");
-  }
-
-  if (URL.canParse(url) && new URL(url).protocol === "https:" && publishableKey.startsWith("sb_publishable_")) {
-    return { url, publishableKey };
-  }
-
-  throw new Error("Use the HTTPS project URL and publishable key from the Supabase dashboard.");
+  return { url: projectUrl.origin, publishableKey: key };
 }

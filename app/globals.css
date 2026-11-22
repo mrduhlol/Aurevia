@@ -8,6 +8,10 @@
   --paper: #f4efe6;
   --muted: #b9c5d5;
   --rule: #45536a;
+  --field-rule: #7889a1;
+  --panel: #17263d;
+  --error: #ffb8ab;
+  --muted-gold: #bb9d68;
   --body-font: system-ui, sans-serif;
   --display-font: Georgia, "Times New Roman", serif;
 }
@@ -133,4 +137,184 @@ h2 {
 
 .preview-steps strong {
   color: var(--paper);
+}
+
+.account-main {
+  display: grid;
+  align-content: start;
+  padding-block: clamp(2.5rem, 7vw, 5rem);
+}
+
+.account-panel {
+  width: min(100%, 38rem);
+  margin-inline: auto;
+}
+
+.account-panel h1 {
+  font-size: clamp(2.375rem, 6vw, 4.5rem);
+}
+
+.account-intro {
+  margin-block: 0.875rem 1.5rem;
+  max-width: 48ch;
+  line-height: 1.6;
+}
+
+.account-form {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+}
+
+.account-field {
+  display: grid;
+  gap: 0.375rem;
+  width: 100%;
+  font-weight: 600;
+}
+
+.account-field input,
+.account-field textarea {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--field-rule);
+  border-radius: 0.5rem;
+  background: var(--panel);
+  color: var(--paper);
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.account-field textarea {
+  resize: vertical;
+}
+
+.account-field small,
+.privacy-choice p {
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.account-notice {
+  margin-block-end: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--rule);
+  background: var(--panel);
+}
+
+.account-form .account-error {
+  color: var(--error);
+}
+
+.account-status:empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: clip;
+}
+
+.account-form button:disabled {
+  cursor: progress;
+}
+
+.account-form .primary-link:disabled {
+  background: var(--muted-gold);
+  border-color: var(--muted-gold);
+}
+
+.account-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 0.24em;
+}
+
+.account-link:hover {
+  color: var(--paper);
+}
+
+.account-links,
+.account-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.25rem;
+}
+
+.account-links {
+  margin-block-start: 0.5rem;
+}
+
+.account-nav [aria-current="page"] {
+  color: var(--paper);
+  font-weight: 650;
+}
+
+.account-divider {
+  margin-block-start: 1.25rem;
+  border-top: 1px solid var(--rule);
+  padding-block-start: 1.5rem;
+}
+
+.account-divider h2 + p {
+  margin-block-start: 0.5rem;
+}
+
+.account-divider .account-form {
+  margin-block-start: 1.25rem;
+}
+
+.account-nav .account-form {
+  margin-block-start: 0;
+}
+
+.account-footer {
+  border-top: 1px solid var(--rule);
+}
+
+.privacy-choice label {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  gap: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.privacy-choice input {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  accent-color: var(--gold);
+}
+
+.profile-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem;
+  margin-block-end: 1.5rem;
+  border-bottom: 1px solid var(--rule);
+  padding-block-end: 1.5rem;
+  overflow-wrap: anywhere;
+}
+
+.profile-avatar {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--gold);
+  font-family: var(--display-font);
+  font-size: 1.375rem;
+}
+
+.profile-bio {
+  white-space: pre-wrap;
 }

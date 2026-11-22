@@ -10,6 +10,7 @@ export default function Home() {
         <nav aria-label="Main navigation" className="flex flex-wrap gap-x-5">
           <a href="#getting-started">Getting started</a>
           <a href="#install">Install</a>
+          <Link href="/dashboard" prefetch={false}>Account</Link>
         </nav>
       </header>
 
@@ -52,7 +53,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="site-footer py-6">Aurevia v0.1.0</footer>
+      <footer className="site-footer py-6">Aurevia v0.2.0</footer>
     </div>
   );
 }
