@@ -1,0 +1,56 @@
+/* Hallmark 2.0.0 | theme: navy and gold (by request) | editorial | type-led starter | signature: two-line flight headline */
+/* Critique: the type and color carry the identity while the product is in development. */
+@import "tailwindcss";
+
+:root {
+  --navy: #101d32;
+  --gold: #e5c486;
+  --paper: #f4efe6;
+  --muted: #b9c5d5;
+  --rule: #45536a;
+  --body-font: system-ui, sans-serif;
+  --display-font: Georgia, "Times New Roman", serif;
+}
+
+html,
+body {
+  overflow-x: clip;
+  background: var(--navy);
+  color: var(--paper);
+  font-family: var(--body-font);
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--navy);
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+}
+
+.wordmark {
+  color: var(--gold);
+  font-family: var(--display-font);
+  font-size: 1.5rem;
+}
+
+h1 {
+  min-width: 0;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+  font-family: var(--display-font);
+  font-size: clamp(2.75rem, 8vw, 6rem);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+}
+
+section p,
+.site-footer {
+  color: var(--muted);
+}
+
+.site-footer {
+  border-top: 1px solid var(--rule);
+}
