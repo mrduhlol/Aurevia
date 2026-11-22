@@ -22,6 +22,8 @@ npm run build
 npm start
 ```
 
+If the local sandbox blocks Turbopack’s worker port, run `NEXT_TELEMETRY_DISABLED=1 npm run build -- --webpack` to verify the production build.
+
 ## PWA behavior
 
 `app/manifest.ts` supplies the standalone manifest and Android icons. Use a production build on HTTPS or localhost to exercise the service worker. For Android installation, open the site in Chrome and use **Add to Home screen**. After an online visit and service worker activation, a failed document navigation shows the offline fallback with a retry link. The service worker caches only that static fallback.
