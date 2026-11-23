@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
+const flightsEnabled = process.env.AUREVIA_TEST_FLIGHTS_DISABLED !== "1";
 const email = "account@example.invalid";
 const initialPassword = "fixture phrase one";
 const replacementPassword = "fixture phrase two";
@@ -23,6 +24,7 @@ const user = {
 function mockSupabase(tls) {
   const calls = [];
   const tokens = new Set();
+  const claims = new Map();
   let password;
   let profile;
   let confirmed = false;
@@ -54,6 +56,38 @@ function mockSupabase(tls) {
         response.writeHead(status, { "Content-Type": "application/json" });
         response.end(body === undefined ? undefined : JSON.stringify(body));
       };
+      if (route === "/rest/v1/flight_claims") {
+        if (!auth) return send(401, { code: "insufficient_privilege" });
+        assert.equal(url.searchParams.get("user_id"), `eq.${user.id}`);
+        if (method === "DELETE") {
+          const id = url.searchParams.get("id")?.slice(3);
+          claims.delete(id);
+          return send(204);
+        }
+        if (method === "HEAD") {
+          response.writeHead(200, { "Content-Range": `*/${claims.size}` });
+          return response.end();
+        }
+        return send(200, [...claims.values()]);
+      }
+      if (route === "/rest/v1/rpc/submit_flight_claim") {
+        if (!auth) return send(401, { code: "insufficient_privilege" });
+        assert.deepEqual(Object.keys(payload).sort(), [
+          "p_consent_version", "p_departure_date", "p_destination",
+          "p_flight_number", "p_origin", "p_source",
+        ]);
+        assert.equal(payload.p_consent_version, 1);
+        if ([...claims.values()].some((claim) => claim.flight_number === payload.p_flight_number)) {
+          return send(200, "duplicate");
+        }
+        const id = crypto.randomUUID();
+        claims.set(id, {
+          id, flight_number: payload.p_flight_number, departure_date: payload.p_departure_date,
+          origin: payload.p_origin, destination: payload.p_destination,
+          source: payload.p_source, status: "unverified", expires_at: "2099-01-01T00:00:00Z",
+        });
+        return send(200, "saved");
+      }
       const fail = (code, status = 400) => send(status, { code, error_code: code, msg: "Fixture-only provider failure" });
 
       if (route === "/auth/v1/signup" && method === "POST") {
@@ -111,7 +145,7 @@ function mockSupabase(tls) {
       response.destroy(error);
     }
   });
-  return { server, calls, getProfile: () => profile, revokeRefresh: () => { canRefresh = false; } };
+  return { server, calls, getProfile: () => profile, getClaims: () => [...claims.values()], revokeRefresh: () => { canRefresh = false; } };
 }
 
 function cookieJar() {
@@ -187,6 +221,9 @@ async function exercise(origin, mock) {
   const unauthorized = await request("/profile");
   assert.equal(unauthorized.status, 307);
   assert.equal(unauthorized.headers.get("location"), "/sign-in?next=/profile");
+  const flightUnauthorized = await request("/flights?method=barcode");
+  assert.equal(flightUnauthorized.status, 307);
+  assert.equal(flightUnauthorized.headers.get("location"), "/sign-in?next=/flights");
   assert.equal(mock.calls.length, 0, "An anonymous visit contacted the provider");
 
   redirects(await submit("/sign-up", "Create account", { email, password: initialPassword }), "/auth/confirm?sent=1");
@@ -213,12 +250,43 @@ async function exercise(origin, mock) {
   assert.match(await edited.text(), /Profile saved/);
   assert.equal(mock.getProfile().discoverable, true);
 
+  if (flightsEnabled) {
+    const flightPage = "/flights?method=manual";
+    const claim = {
+      flight_number: "ai 0202", departure_date: new Date().toISOString().slice(0, 10),
+      origin: "del", destination: "bom", consent: "on", source: "manual",
+    };
+    assert.match(await (await request(flightPage)).text(), /You have no active flight claims/);
+    const missingConsent = await submit(flightPage, "Save manual claim", { ...claim, consent: "" });
+    assert.match(await missingConsent.text(), /Check the flight number/);
+    assert.deepEqual(mock.getClaims(), []);
+    const savedClaim = await submit(flightPage, "Save manual claim", {
+      ...claim, user_id: "untrusted", status: "verified", raw_barcode: "SYNTHETIC_ONLY",
+    });
+    assert.match(await savedClaim.text(), /Flight claim saved as unverified/);
+    assert.equal(mock.getClaims()[0].flight_number, "AI202");
+    assert.equal(mock.getClaims()[0].status, "unverified");
+    const replay = await submit(flightPage, "Save manual claim", { ...claim, source: "barcode_text" });
+    assert.match(await replay.text(), /already saved this flight/);
+    assert.equal(mock.getClaims().length, 1);
+    assert.match(await (await request("/dashboard")).text(), /1 active unverified claim/);
+    const deletion = await submit("/flights", "Confirm deletion", { claim_id: mock.getClaims()[0].id });
+    assert.ok(deletion.ok);
+    assert.deepEqual(mock.getClaims(), []);
+    assert.match(await (await request("/flights")).text(), /You have no active flight claims/);
+  } else {
+    const disabled = await request("/flights?method=manual");
+    assert.match(await disabled.text(), /Flight claims are unavailable on this installation/);
+    assert.equal(mock.calls.some((entry) => entry.route.startsWith("/rest/v1/flight_claims")), false);
+  }
+
   redirects(await submit("/dashboard", "Sign out", {}), "/sign-in");
   assert.equal(jar.header(), "");
   redirects(await submit("/sign-in", "Sign in", {
     email, password: initialPassword, next: "https://outside.invalid/",
   }), "/dashboard");
-  await delay(1200);
+  // Allow for the SDK rounding its one-second fixture expiry to whole seconds.
+  await delay(2100);
   const refreshed = await request("/dashboard");
   assert.match(await refreshed.text(), /Your dashboard/);
   assert.ok(mock.calls.some((entry) => entry.grant === "refresh_token"), "Proxy did not refresh the expired session");
@@ -243,7 +311,8 @@ async function exercise(origin, mock) {
   assert.ok(mock.calls.some((entry) => entry.type === "recovery"));
 
   mock.revokeRefresh();
-  await delay(1200);
+  // Allow for the SDK rounding its one-second fixture expiry to whole seconds.
+  await delay(2100);
   const revoked = await request("/profile");
   assert.equal(revoked.status, 307);
   assert.equal(revoked.headers.get("location"), "/sign-in?next=/profile");
@@ -270,6 +339,7 @@ try {
     env: {
       ...process.env,
       NEXT_TELEMETRY_DISABLED: "1",
+      FLIGHT_CLAIMS_ENABLED: String(flightsEnabled),
       NODE_EXTRA_CA_CERTS: cert,
       SUPABASE_URL: `https://127.0.0.1:${mock.server.address().port}`,
       SUPABASE_PUBLISHABLE_KEY: "sb_publishable_test_fixture",
@@ -277,7 +347,7 @@ try {
   });
   await waitForApp(origin, child);
   await exercise(origin, mock);
-  console.log("Mock-backed production auth, session refresh, recovery, and profile checks passed.");
+  console.log("Mock-backed production auth, session, profile, and flight claim checks passed.");
 } finally {
   if (child && child.exitCode === null) {
     const exited = once(child, "exit");

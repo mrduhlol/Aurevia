@@ -318,3 +318,84 @@ h2 {
 .profile-bio {
   white-space: pre-wrap;
 }
+
+.flight-field-grid,
+.flight-barcode,
+.flight-preview {
+  display: grid;
+  gap: 1rem;
+  width: 100%;
+}
+
+.flight-barcode > button {
+  justify-self: start;
+}
+
+.flight-methods {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 1.25rem;
+  margin-block: 0.5rem;
+}
+
+.flight-methods [aria-current="page"] {
+  color: var(--paper);
+  font-weight: 650;
+}
+
+.flight-method-intro {
+  margin-block: 0.5rem 1rem;
+}
+
+.flight-preview,
+.flight-claims > li {
+  border-top: 1px solid var(--rule);
+  padding-block: 1rem;
+}
+
+.flight-claims {
+  margin-top: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.flight-preview h3,
+.flight-claims h3 {
+  font-family: var(--display-font);
+  font-size: 1.375rem;
+  overflow-wrap: anywhere;
+}
+
+.flight-claims h3 span {
+  margin-inline-start: 0.375rem;
+}
+
+.flight-claims details summary {
+  cursor: pointer;
+}
+
+.account-field select {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--field-rule);
+  border-radius: 0.5rem;
+  background: var(--panel);
+  color: var(--paper);
+  font-weight: 400;
+}
+
+.account-field input[type="date"] {
+  min-width: 0;
+}
+
+.flight-file input::file-selector-button {
+  margin-inline-end: 0.75rem;
+  color: var(--gold);
+}
+
+@media (min-width: 640px) {
+  .flight-field-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -34,3 +34,7 @@ Supabase’s default mailer is restricted and rate-limited for testing. Configur
 - Request a reset for a synthetic account, enter an invalid code, then use the emailed code. Verify that the old password fails and the new password works. Test an unknown email and confirm the request shows the same acknowledgement.
 - Save and reopen a profile with discoverability off, then turn the preference on. Confirm a second test account cannot read or update the first account’s profile, even while the first account is opted in. Run [the policy checks](../tests/profile-rls.sql) as a database administrator against a disposable database after the migration. The script rolls back its fixture rows.
 - Avatar uploads are deferred. The nullable avatar path is reserved and authenticated clients cannot write it. Aurevia displays an initial and has no public profile lookup, storage bucket, or flight verification flow.
+
+## Flight claims
+
+For the optional v0.3.0 workflow, see [flight setup and retention](../docs/flight-claims.md).

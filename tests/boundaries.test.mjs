@@ -6,6 +6,7 @@ import { readSupabaseConfig } from "../lib/supabase/config.ts";
 
 test("auth redirects accept only the two account destinations", () => {
   assert.equal(accountDestination("/profile"), "/profile");
+  assert.equal(accountDestination("/flights"), "/flights");
   for (const value of [null, [], "/dashboard", "/profile?x=1", "//outside.invalid", "https://outside.invalid", "/\\outside.invalid"]) {
     assert.equal(accountDestination(value), "/dashboard");
   }

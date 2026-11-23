@@ -14,7 +14,7 @@ export default async function AccountLayout({ children }: { children: ReactNode 
       <main className="account-main flex-1" id="main" tabIndex={-1}>
         {children}
       </main>
-      <footer className="site-footer account-footer py-6">Aurevia v0.2.0</footer>
+      <footer className="site-footer account-footer py-6">Aurevia v0.3.0</footer>
     </div>
   );
 }

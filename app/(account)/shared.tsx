@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { readSupabaseConfig } from "../../lib/supabase/config";
+import { flightClaimsEnabled } from "../../lib/flight/config";
 import { signOut } from "../../lib/auth/actions";
 import { ActionForm, EmailInput } from "./form";
 
@@ -68,11 +69,14 @@ export function CodeField() {
   );
 }
 
-export function AccountNav({ current }: { current: "dashboard" | "profile" }) {
+export function AccountNav({ current }: { current: "dashboard" | "profile" | "flights" }) {
   return (
     <nav aria-label="Account navigation" className="account-nav">
       <Link className="account-link" href="/dashboard" prefetch={false} aria-current={current === "dashboard" ? "page" : undefined}>Dashboard</Link>
       <Link className="account-link" href="/profile" prefetch={false} aria-current={current === "profile" ? "page" : undefined}>Profile</Link>
+      {flightClaimsEnabled() && (
+        <Link className="account-link" href="/flights" prefetch={false} aria-current={current === "flights" ? "page" : undefined}>Flights</Link>
+      )}
       <ActionForm action={signOut} submit="Sign out" pendingLabel="Signing out…" secondary />
     </nav>
   );

@@ -41,10 +41,6 @@ Follow the [Supabase Free setup](supabase/README.md) to configure Auth and apply
 
 Profiles have a display name, optional bio, and a discoverability preference that starts off. Postgres row-level security limits reads and writes to the owner regardless of that preference. The preference does not publish a profile, and account email is never copied into profile rows.
 
-## Boarding-pass verification
+## Flight claims
 
-The planned hybrid flow starts with a user-initiated camera permission request over HTTPS (or localhost during development). Decode the barcode on-device where practical and offer an accessible fallback when the camera or barcode is unavailable. Manual flight details alone should never confer verified status.
-
-A copied barcode can be parsed, so verification requires a trusted validation source or review process. Send only the fields needed for the decision. Keep pass images, raw barcode contents, and booking references out of profiles, analytics, and routine logs. Use synthetic boarding passes in development.
-
-Flight verification, discovery, and messaging are planned product work.
+Version 0.3.0 adds owner-only, unverified flight claims. Enter a flight manually or extract flight fields from decoded single-flight boarding-pass text on the device. Enable the workflow after applying the migration and verifying retention cleanup. [Flight setup, privacy model, and limitations](docs/flight-claims.md) cover the details.

@@ -17,7 +17,7 @@ export const readAccount = cache(async (writeCookies = false) => {
   return { state: "authenticated", client, user: data.user } as const;
 });
 
-export async function requireAccount(destination: "/dashboard" | "/profile") {
+export async function requireAccount(destination: "/dashboard" | "/profile" | "/flights") {
   const account = await readAccount();
   if (account.state === "disabled" || account.state === "anonymous") {
     redirect(`/sign-in?next=${destination}`);

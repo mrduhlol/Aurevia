@@ -20,6 +20,6 @@ export function validNewPassword(value: string) {
     !value.includes("\0");
 }
 
-export function accountDestination(value: unknown): "/dashboard" | "/profile" {
-  return value === "/profile" ? "/profile" : "/dashboard";
+export function accountDestination(value: unknown): "/dashboard" | "/profile" | "/flights" {
+  return value === "/profile" || value === "/flights" ? value : "/dashboard";
 }
